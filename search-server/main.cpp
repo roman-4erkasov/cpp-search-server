@@ -26,6 +26,47 @@ int ReadLineWithNumber()
     return result;
 }
 
+bool IsValidWord(const string &word)
+{
+    // A valid word must not contain special characters
+    int len = word.size();
+    if(word.empty())
+    {
+        return false;
+    }
+    if(len==1 and word[0]=='-')
+    {
+        return false;
+    } 
+    for(int i=1; i<len;++i)
+    {
+        if(word[i]=='-')
+        {
+            return false;
+        }
+    }
+    return none_of(
+        word.begin(), 
+        word.end(), 
+        [](char c) { return c >= '\0' && c < ' '; }
+    );
+}
+
+int ComputeAverageRating(const vector<int> &ratings)
+{
+    if (ratings.empty())
+    {
+        return 0;
+    }
+    int rating_sum = 0;
+    for (const int rating : ratings)
+    {
+        rating_sum += rating;
+    }
+    return rating_sum / static_cast<int>(ratings.size());
+}
+
+
 vector<string> SplitIntoWords(const string &text)
 {
     vector<string> words;
@@ -34,10 +75,12 @@ vector<string> SplitIntoWords(const string &text)
     {
         if (c == ' ')
         {
-            if (!word.empty())
+            if (not word.empty())
             {
-                words.push_back(word);
-                word.clear();
+                if(IsValidWord(word)){
+                    words.push_back(word);
+                    word.clear();
+                }
             }
         }
         else
@@ -45,11 +88,13 @@ vector<string> SplitIntoWords(const string &text)
             word += c;
         }
     }
-    if (!word.empty())
+    if (not word.empty())
     {
-        words.push_back(word);
+        if(IsValidWord(word))
+        {
+            words.push_back(word);
+        }
     }
-
     return words;
 }
 
@@ -97,32 +142,24 @@ public:
     explicit SearchServer(const StringContainer &stop_words)
         : stop_words_(MakeUniqueNonEmptyStrings(stop_words))
     {
-        for (string word : stop_words)
+        if (
+            not std::all_of(
+                stop_words_.begin(),
+                stop_words_.end(),
+                IsValidWord
+            )
+        )
         {
-            if (not IsValidWord(word))
-            {
-                throw invalid_argument("invalid stop word");
-            }
+            throw invalid_argument("invalid stop word");
         }
     }
 
     explicit SearchServer(const string &stop_words_text)
-        : SearchServer(
-              SplitIntoWords(stop_words_text)) // Invoke delegating constructor from string container
+        : SearchServer(SplitIntoWords(stop_words_text)) // Invoke delegating constructor from string container
     {
-
-        if (not IsValidWord(stop_words_text))
-        {
-            throw invalid_argument("invalid string of stop words");
-        }
     }
 
-    static bool IsValidWord(const string &word)
-    {
-        // A valid word must not contain special characters
-        return none_of(word.begin(), word.end(), [](char c)
-                       { return c >= '\0' && c < ' '; });
-    }
+    
 
     void AddDocument(
         int document_id,
@@ -133,13 +170,8 @@ public:
         if (document_id < 0)
             throw invalid_argument("document_id must be positive");
         const vector<string> words = SplitIntoWordsNoStop(document);
-        for (string word : words)
-        {
-            if (not IsValidWord(word))
-                throw invalid_argument("documnet contains invalid word");
-            if (0 < documents_.count(document_id))
-                throw invalid_argument("document_id is occupied");
-        }
+        if (0 < documents_.count(document_id))
+            throw invalid_argument("document_id is occupied");
         const double inv_word_count = 1.0 / words.size();
         for (const string &word : words)
         {
@@ -163,12 +195,6 @@ public:
         const string &raw_query,
         DocumentPredicate document_predicate) const
     {
-        if (not IsValidWord(raw_query))
-            throw invalid_argument("query text contains invalid word");
-        if (not IsValidQuery(raw_query))
-        {
-            throw invalid_argument("invalid query");
-        }
         const Query query = ParseQuery(raw_query);
         auto matched_documents = FindAllDocuments(
             query,
@@ -203,14 +229,16 @@ public:
             [status](
                 int document_id,
                 DocumentStatus document_status,
-                int rating)
+                int rating
+            )
             {
                 return document_status == status;
             });
     }
 
     vector<Document> FindTopDocuments(
-        const string &raw_query) const
+        const string &raw_query
+    ) const
     {
         return FindTopDocuments(
             raw_query,
@@ -224,13 +252,6 @@ public:
 
     bool IsValidQuery(const string &text) const
     {
-        for (int i = 1; i < text.size(); ++i)
-        {
-            if (
-                text[i - 1] == '-' and
-                (text[i] == '-' or text[i] == ' '))
-                return false;
-        }
         if (
             text.size() <= 0 or
             text[text.size() - 1] == '-')
@@ -240,18 +261,13 @@ public:
 
     tuple<vector<string>, DocumentStatus> MatchDocument(
         const string &raw_query,
-        int document_id) const
+        int document_id
+    ) const
     {
-        if (not IsValidWord(raw_query))
-            throw invalid_argument("query text contains invalid word");
-        if (not IsValidQuery(raw_query))
-            throw invalid_argument("invalid query");
         const Query query = ParseQuery(raw_query);
         vector<string> matched_words;
         for (const string &word : query.plus_words)
         {
-            if (not IsValidWord(word))
-                throw invalid_argument("query contains invalid plus word");
             if (word_to_document_freqs_.count(word) == 0)
             {
                 continue;
@@ -263,8 +279,6 @@ public:
         }
         for (const string &word : query.minus_words)
         {
-            if (not IsValidWord(word))
-                throw invalid_argument("query contains invalid minus word");
             if (word_to_document_freqs_.count(word) == 0)
             {
                 continue;
@@ -307,19 +321,7 @@ private:
         return words;
     }
 
-    static int ComputeAverageRating(const vector<int> &ratings)
-    {
-        if (ratings.empty())
-        {
-            return 0;
-        }
-        int rating_sum = 0;
-        for (const int rating : ratings)
-        {
-            rating_sum += rating;
-        }
-        return rating_sum / static_cast<int>(ratings.size());
-    }
+    
 
     struct QueryWord
     {
@@ -348,6 +350,8 @@ private:
 
     Query ParseQuery(const string &text) const
     {
+        if (not IsValidQuery(text))
+            throw invalid_argument("invalid query");
         Query query;
         for (const string &word : SplitIntoWords(text))
         {
