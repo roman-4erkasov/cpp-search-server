@@ -1,5 +1,4 @@
 #include "search_server.hpp"
-
 #include <cmath>
 
 SearchServer::SearchServer(const std::string& stop_words_text)
