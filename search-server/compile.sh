@@ -1,0 +1,1 @@
+g++ -std=c++17 main.cpp document.hpp document.cpp paginator.hpp read_input_functions.cpp read_input_functions.hpp request_queue.cpp request_queue.hpp search_server.cpp search_server.hpp string_processing.cpp string_processing.hpp

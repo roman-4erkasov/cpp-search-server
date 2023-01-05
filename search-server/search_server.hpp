@@ -7,7 +7,10 @@
 #include "document.hpp"
 #include "string_processing.hpp"
 
+#define EPS 1e-6
+
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
+
 
 using namespace std;
 
@@ -42,7 +45,7 @@ public:
 
         sort(matched_documents.begin(), matched_documents.end(),
              [](const Document& lhs, const Document& rhs) {
-                 if (abs(lhs.relevance - rhs.relevance) < 1e-6) {
+                 if (abs(lhs.relevance - rhs.relevance) < EPS) {
                      return lhs.rating > rhs.rating;
                  } else {
                      return lhs.relevance > rhs.relevance;

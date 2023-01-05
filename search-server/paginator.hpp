@@ -36,7 +36,6 @@ std::ostream& operator<<(
     for(Iterator it=data.begin();it!=data.end();++it){
         os<<*it;
     }
-    //os << *data.begin();
     return os;
 }
 
