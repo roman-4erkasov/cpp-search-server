@@ -40,7 +40,6 @@ std::ostream& operator<<(
 }
 
 
-
 template <typename Iterator>
 class Paginator {
 public:
