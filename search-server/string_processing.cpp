@@ -1,4 +1,4 @@
-#include "string_processing.hpp"
+#include "string_processing.h"
 
 vector<string> SplitIntoWords(const string& text) {
     vector<string> words;

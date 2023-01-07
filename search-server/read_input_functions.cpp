@@ -1,4 +1,4 @@
-#include "read_input_functions.hpp"
+#include "read_input_functions.h"
 
 string ReadLine() {
     string s;

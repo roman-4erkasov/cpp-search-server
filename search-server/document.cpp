@@ -1,4 +1,4 @@
-#include "document.hpp"
+#include "document.h"
 
 Document::Document() = default;
 

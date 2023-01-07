@@ -4,8 +4,9 @@
 #include <map>
 #include <algorithm>
 
-#include "document.hpp"
-#include "string_processing.hpp"
+#include "document.h"
+#include "string_processing.h"
+#include "paginator.h"
 
 #define EPS 1e-6
 
@@ -13,6 +14,8 @@ const int MAX_RESULT_DOCUMENT_COUNT = 5;
 
 
 using namespace std;
+
+
 
 class SearchServer {
 public:
@@ -74,6 +77,7 @@ public:
 
     int GetDocumentCount() const;
     int GetDocumentId(int index) const;
+    
 
     tuple<vector<string>, DocumentStatus> MatchDocument(const string& raw_query,
                                                         int document_id) const {
@@ -99,11 +103,20 @@ public:
         }
         return {matched_words, documents_.at(document_id).status};
     }
+    
+    vector<int>::iterator begin();
+    vector<int>::iterator end();
+    vector<int>::const_iterator cbegin();
+    vector<int>::const_iterator cend();
+    
+    const map<string, double> GetWordFrequencies(int document_id) const;
+    void RemoveDocument(int document_id);
 
 private:
     struct DocumentData {
         int rating;
         DocumentStatus status;
+        map<string,double> freqs;
     };
     const set<string> stop_words_;
     map<string, map<int, double>> word_to_document_freqs_;
