@@ -14,9 +14,13 @@ void RemoveDuplicates(SearchServer &search_server)
         for (const auto &[word, _] : search_server.GetWordFrequencies(doc_id))
         {
             if (is_first)
+            {
                 is_first = false;
+            }
             else
+            {
                 sstream << ' ';
+            }
             sstream << word;
         }
         std::string key = sstream.str();

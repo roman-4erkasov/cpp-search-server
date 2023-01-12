@@ -10,7 +10,9 @@ vector<Document> RequestQueue::AddFindRequest(const string &raw_query, DocumentS
     FreeUpPlaceInQueue();
     vector<Document> documents = search_server_.FindTopDocuments(raw_query, status);
     if (documents.empty())
+    {
         n_empty_requests_++;
+    }
     requests_.push_back({documents, raw_query});
     return documents;
 }
@@ -20,7 +22,9 @@ vector<Document> RequestQueue::AddFindRequest(const string &raw_query)
     FreeUpPlaceInQueue();
     vector<Document> documents = search_server_.FindTopDocuments(raw_query);
     if (documents.empty())
+    {
         n_empty_requests_++;
+    }
     requests_.push_back({documents, raw_query});
     return documents;
 }
@@ -35,7 +39,9 @@ void RequestQueue::FreeUpPlaceInQueue()
     while (min_in_day_ <= requests_.size())
     {
         if (requests_.front().documents.empty())
+        {
             --n_empty_requests_;
+        }
         requests_.pop_front();
     }
 }

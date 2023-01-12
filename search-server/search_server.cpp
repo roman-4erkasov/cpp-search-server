@@ -11,7 +11,8 @@ std::vector<Document> SearchServer::FindTopDocuments(
 {
     return FindTopDocuments(
         raw_query, [status](int document_id, DocumentStatus document_status, int rating)
-        { return document_status == status; });
+        { return document_status == status; }
+    );
 };
 
 std::vector<Document> SearchServer::FindTopDocuments(const string &raw_query) const
@@ -77,7 +78,8 @@ void SearchServer::AddDocument(
     }
     documents_.emplace(
         document_id,
-        DocumentData{ComputeAverageRating(ratings), status, freqs});
+        DocumentData{ComputeAverageRating(ratings), status, freqs}
+    );
     document_ids_[next_index] = document_id;
     id2index[document_id] = next_index;
     ++next_index;

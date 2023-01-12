@@ -62,7 +62,9 @@ public:
             iend = std::next(ibeg, page_size);
         }
         if (0 < std::distance(ibeg, range_end))
+        {
             pages_.push_back(Page(ibeg, range_end));
+        }
     }
 
     auto begin() const

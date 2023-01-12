@@ -43,7 +43,9 @@ std::vector<Document> RequestQueue::AddFindRequest(
     FreeUpPlaceInQueue();
     std::vector<Document> documents = search_server_.FindTopDocuments(raw_query, document_predicate);
     if (documents.empty())
+    {
         n_empty_requests_++;
+    }
     requests_.push_back({documents, raw_query});
     return documents;
 }
