@@ -1,8 +1,8 @@
 #pragma once
 #include <iostream>
 
-
-struct Document {
+struct Document
+{
     Document();
     Document(int id, double relevance, int rating);
 
@@ -11,14 +11,12 @@ struct Document {
     int rating = 0;
 };
 
-enum class DocumentStatus {
+enum class DocumentStatus
+{
     ACTUAL,
     IRRELEVANT,
     BANNED,
     REMOVED,
 };
 
-std::ostream& operator<<(
-    std::ostream& os,
-    const Document& doc
-);
+std::ostream &operator<<(std::ostream &os, const Document &doc);
