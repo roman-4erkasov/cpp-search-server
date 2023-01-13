@@ -80,19 +80,12 @@ void SearchServer::AddDocument(
         document_id,
         DocumentData{ComputeAverageRating(ratings), status, freqs}
     );
-    document_ids_[next_index] = document_id;
-    id2index[document_id] = next_index;
-    ++next_index;
+    document_ids_.insert(document_id);
 }
 
 int SearchServer::GetDocumentCount() const
 {
     return documents_.size();
-}
-
-int SearchServer::GetDocumentId(int index) const
-{
-    return document_ids_.at(index);
 }
 
 bool SearchServer::IsStopWord(const string &word) const
@@ -181,21 +174,21 @@ double SearchServer::ComputeWordInverseDocumentFreq(const string &word) const
     return log(GetDocumentCount() * 1.0 / word_to_document_freqs_.at(word).size());
 }
 
-map<int, int>::iterator SearchServer::begin()
+set<int>::iterator SearchServer::begin()
 {
     return document_ids_.begin();
 }
-map<int, int>::iterator SearchServer::end()
+set<int>::iterator SearchServer::end()
 {
     return document_ids_.end();
 }
 
-map<int, int>::const_iterator SearchServer::cbegin()
+set<int>::const_iterator SearchServer::cbegin()
 {
     return document_ids_.cbegin();
 }
 
-map<int, int>::const_iterator SearchServer::cend()
+set<int>::const_iterator SearchServer::cend()
 {
     return document_ids_.cend();
 }
@@ -220,7 +213,5 @@ void SearchServer::RemoveDocument(int document_id)
         word_to_document_freqs_[word].erase(document_id);
     }
     documents_.erase(document_id);
-    int doc_index = id2index.at(document_id);
-    document_ids_.erase(doc_index);
-    id2index.erase(document_id);
+    document_ids_.erase(document_id);
 }

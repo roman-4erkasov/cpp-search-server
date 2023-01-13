@@ -5,32 +5,25 @@ using namespace std;
 
 void RemoveDuplicates(SearchServer &search_server)
 {
-    set<std::string> passed;
-    for (auto it : search_server)
+    set<set<std::string> > passed;
+    set<int> duplicates;
+    for (int doc_id : search_server)
     {
-        int doc_id = it.second;
-        std::stringstream sstream;
-        bool is_first = true;
+        set<string> bag_of_words;
         for (const auto &[word, _] : search_server.GetWordFrequencies(doc_id))
         {
-            if (is_first)
-            {
-                is_first = false;
-            }
-            else
-            {
-                sstream << ' ';
-            }
-            sstream << word;
+            bag_of_words.insert(word);
         }
-        std::string key = sstream.str();
-        if (not passed.count(key))
+        if (passed.find(bag_of_words) == passed.end())
         {
-            passed.insert(key);
+            passed.insert(bag_of_words);
         }
         else
         {
-            search_server.RemoveDocument(doc_id);
+            duplicates.insert(doc_id);
         }
+    }
+    for(int doc_id: duplicates){
+        search_server.RemoveDocument(doc_id);
     }
 }

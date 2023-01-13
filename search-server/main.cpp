@@ -23,10 +23,9 @@ void MatchDocuments(SearchServer search_server, string raw_query)
     LOG_DURATION_STREAM("Operation time", cout);
     cout << "Результаты поиска по запросу: " << raw_query << endl;
     int n = search_server.GetDocumentCount();
-    for (int i = 0; i < n; ++i)
+    for (int id: search_server)
     {
         bool is_first = true;
-        int id = search_server.GetDocumentId(i);
         auto [words, status] = search_server.MatchDocument(raw_query, id);
         cout << "{ document_id = " << id << ", status = "
              << static_cast<std::underlying_type<DocumentStatus>::type>(status)

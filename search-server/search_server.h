@@ -38,15 +38,14 @@ public:
 
     std::vector<Document> FindTopDocuments(const std::string &raw_query) const;
     int GetDocumentCount() const;
-    int GetDocumentId(int index) const;
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(
         const std::string &raw_query, int document_id
     ) const;
 
-    std::map<int, int>::iterator begin();
-    std::map<int, int>::iterator end();
-    std::map<int, int>::const_iterator cbegin();
-    std::map<int, int>::const_iterator cend();
+    std::set<int>::iterator begin();
+    std::set<int>::iterator end();
+    std::set<int>::const_iterator cbegin();
+    std::set<int>::const_iterator cend();
     const std::map<std::string, double> &GetWordFrequencies(int document_id) const;
     void RemoveDocument(int document_id);
 
@@ -72,8 +71,7 @@ private:
     const std::set<std::string> stop_words_;
     std::map<std::string, std::map<int, double>> word_to_document_freqs_;
     std::map<int, DocumentData> documents_;
-    std::map<int, int> document_ids_, id2index;
-    int next_index = 0;
+    std::set<int> document_ids_;
 
     bool IsStopWord(const std::string &word) const;
     static bool IsValidWord(const std::string &word);
