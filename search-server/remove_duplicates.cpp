@@ -1,29 +1,25 @@
 #include "remove_duplicates.h"
-#include <sstream>
 
-using namespace std;
-
-void RemoveDuplicates(SearchServer &search_server)
-{
-    set<set<std::string> > passed;
-    set<int> duplicates;
-    for (int doc_id : search_server)
-    {
-        set<string> bag_of_words;
-        for (const auto &[word, _] : search_server.GetWordFrequencies(doc_id))
-        {
-            bag_of_words.insert(word);
-        }
-        if (passed.find(bag_of_words) == passed.end())
-        {
-            passed.insert(bag_of_words);
-        }
-        else
-        {
-            duplicates.insert(doc_id);
+void RemoveDuplicates(SearchServer& search_server) {
+    set<int> buff;
+    for (auto it1=search_server.begin();it1!=search_server.end();++it1) {
+        int id1 = *it1;
+        if(buff.count(id1)) continue;
+        map<string,double> freqs1=search_server.GetWordFrequencies(id1);
+        for(auto it2=next(it1);it2!=search_server.end();++it2){
+            int id2 = *it2;
+            map<string,double> freqs2=search_server.GetWordFrequencies(id2);
+            if(freqs1.size()!=freqs2.size()) continue;
+            bool is_equal = equal(
+                freqs1.begin(),
+                freqs1.end(),
+                freqs2.begin(),
+                [](const auto l,const auto r){
+                    return l.first==r.first;
+                }
+            );
+            if(is_equal) buff.insert(id2);
         }
     }
-    for(int doc_id: duplicates){
-        search_server.RemoveDocument(doc_id);
-    }
+    for(int id: buff) search_server.RemoveDocument(id);
 }
