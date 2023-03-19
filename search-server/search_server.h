@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <algorithm>
+#include <execution>
 
 #include "document.h"
 #include "string_processing.h"
@@ -12,88 +13,140 @@
 
 const int MAX_RESULT_DOCUMENT_COUNT = 5;
 
+
 using namespace std;
 
-class SearchServer
-{
+
+
+class SearchServer {
 public:
+    explicit SearchServer(std::string const& str);
+    explicit SearchServer(std::string_view str);
     template <typename StringContainer>
     explicit SearchServer(const StringContainer &stop_words);
-    explicit SearchServer(const std::string &stop_words_text);
+    //explicit SearchServer(const std::string& stop_words_text);
 
     void AddDocument(
-        int document_id,
-        const std::string &document,
+        int document_id, 
+        const std::string& document, 
         DocumentStatus status,
-        const std::vector<int> &ratings);
-
+        const std::vector<int>& ratings
+    );
+    
     template <typename DocumentPredicate>
     std::vector<Document> FindTopDocuments(
         const std::string &raw_query,
-        DocumentPredicate document_predicate) const;
+        DocumentPredicate document_predicate
+    ) const;
 
+    
     std::vector<Document> FindTopDocuments(
-        const std::string &raw_query, DocumentStatus status) const;
+        const std::string &raw_query, DocumentStatus status
+    ) const;
     std::vector<Document> FindTopDocuments(const std::string &raw_query) const;
-
+    
     int GetDocumentCount() const;
-    // int GetDocumentId(int index) const;
-
+    
     std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(
-        const std::string &raw_query, int document_id) const;
-
+        const std::string &raw_query, int document_id
+    ) const;
+    tuple<vector<string>, DocumentStatus> MatchDocument(
+        const std::execution::sequenced_policy& policy,
+        const string &raw_query,
+        int document_id
+    ) const;
+    tuple<vector<string>, DocumentStatus> MatchDocument(
+        const std::execution::parallel_policy& policy,
+        const string &raw_query,
+        int document_id
+    ) const;
+    
     set<int>::iterator begin();
     set<int>::iterator end();
     set<int>::const_iterator cbegin();
     set<int>::const_iterator cend();
-
+    
+    //const map<string, double> GetWordFrequencies(int document_id) const;
     const map<string, double> &GetWordFrequencies(int document_id) const;
     void RemoveDocument(int document_id);
+    //template<class ExecutionPolicy>
+    //void RemoveDocument(ExecutionPolicy policy, int document_id);
+    void RemoveDocument(
+        const std::execution::parallel_policy& policy, 
+        int document_id
+    );
+    void RemoveDocument(
+        const std::execution::sequenced_policy& policy, 
+        int document_id
+    );
 
 private:
-    struct DocumentData
-    {
+    struct DocumentData {
         int rating;
         DocumentStatus status;
-        map<string, double> freqs;
+        map<string,double> freqs;
     };
     const set<string> stop_words_;
     map<string, map<int, double>> word_to_document_freqs_;
     map<int, DocumentData> documents_;
+    //vector<int> document_ids_;
     std::set<int> document_ids_;
 
-    bool IsStopWord(const string &word) const;
-    static bool IsValidWord(const string &word);
+    bool IsStopWord(const string_view& word) const;
+    static bool IsValidWord(const string_view& word);
 
-    vector<string> SplitIntoWordsNoStop(const string &text) const;
-    static int ComputeAverageRating(const vector<int> &ratings);
+    vector<string> SplitIntoWordsNoStop(const string& text) const;
+    static int ComputeAverageRating(const vector<int>& ratings);
 
-    struct QueryWord
-    {
+    struct QueryWord {
         string data;
         bool is_minus;
         bool is_stop;
     };
 
-    QueryWord ParseQueryWord(const string &text) const;
-
-    struct Query
-    {
+    QueryWord ParseQueryWord(const string& text) const;
+     
+    // Sequential version
+    struct QuerySeq {
         set<string> plus_words;
         set<string> minus_words;
     };
-
-    Query ParseQuery(const string &text) const;
-    double ComputeWordInverseDocumentFreq(const string &word) const;
+    
+    // Parallel version
+    struct Query {
+        vector<string> plus_words;
+        vector<string> minus_words;
+    };
+    
+    // Sequential version
+    QuerySeq ParseQuerySeq(const string& text) const;
+    // Parallel version
+    Query ParseQuery(const string& text,bool is_uniq=true) const;
+    Query ParseQuery(
+        const std::execution::parallel_policy& policy,
+        const string& text, 
+        bool is_uniq=true
+    ) const;
+    
+    double ComputeWordInverseDocumentFreq(const string& word) const;
     template <typename DocumentPredicate>
     std::vector<Document> FindAllDocuments(
         const Query &query,
-        DocumentPredicate document_predicate) const;
+        DocumentPredicate document_predicate
+    ) const;
 };
+
+void make_unique(
+    vector<string>& items
+);
+void make_unique(
+    const std::execution::parallel_policy& policy,
+    vector<string>& items
+);
 
 template <typename StringContainer>
 SearchServer::SearchServer(const StringContainer &stop_words)
-    : stop_words_(MakeUniqueNonEmptyStrings(stop_words))
+:stop_words_(MakeUniqueNonEmptyStrings(stop_words))
 {
     if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord))
     {
