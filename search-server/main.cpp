@@ -14,7 +14,10 @@ using namespace std;
 
 int main() {
     //std::cout << "main: start"<<std::endl;
-    SearchServer search_server("and with"s);
+    
+    //SearchServer search_server("and with"s);
+    string stop_words = "and with"s;
+    SearchServer search_server(stop_words);
 
     int id = 0;
     for (
@@ -36,7 +39,7 @@ int main() {
         const auto [words, status] = search_server.MatchDocument(query, 1);
         cout << words.size() << " words for document 1"s << endl;
         // 1 words for document 1
-        //std::cout << "ex1:end"<<std::endl;
+        std::cout << "ex1:end"<<std::endl;
     }
 
     {

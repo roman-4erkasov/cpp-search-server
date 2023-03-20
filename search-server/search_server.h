@@ -4,6 +4,7 @@
 #include <map>
 #include <algorithm>
 #include <execution>
+#include <string_view>
 
 #include "document.h"
 #include "string_processing.h"
@@ -47,17 +48,17 @@ public:
     
     int GetDocumentCount() const;
     
-    std::tuple<std::vector<std::string>, DocumentStatus> MatchDocument(
-        const std::string &raw_query, int document_id
+    std::tuple<std::vector<std::string_view>, DocumentStatus> MatchDocument(
+        const std::string_view raw_query, int document_id
     ) const;
-    tuple<vector<string>, DocumentStatus> MatchDocument(
+    tuple<vector<string_view>, DocumentStatus> MatchDocument(
         const std::execution::sequenced_policy& policy,
-        const string &raw_query,
+        const string_view raw_query,
         int document_id
     ) const;
-    tuple<vector<string>, DocumentStatus> MatchDocument(
+    tuple<vector<string_view>, DocumentStatus> MatchDocument(
         const std::execution::parallel_policy& policy,
-        const string &raw_query,
+        const string_view raw_query,
         int document_id
     ) const;
     
@@ -67,7 +68,7 @@ public:
     set<int>::const_iterator cend();
     
     //const map<string, double> GetWordFrequencies(int document_id) const;
-    const map<string, double> &GetWordFrequencies(int document_id) const;
+    const map<string_view, double> &GetWordFrequencies(int document_id) const;
     void RemoveDocument(int document_id);
     //template<class ExecutionPolicy>
     //void RemoveDocument(ExecutionPolicy policy, int document_id);
@@ -81,54 +82,57 @@ public:
     );
 
 private:
+    std::set<std::string> words;
     struct DocumentData {
         int rating;
         DocumentStatus status;
-        map<string,double> freqs;
+        map<string_view,double> freqs;
     };
-    const set<string> stop_words_;
-    map<string, map<int, double>> word_to_document_freqs_;
+    //const std::set<std::string> stop_words_;
+    std::set<std::string_view> stop_words_;
+    
+    map<string_view, map<int, double>> word_to_document_freqs_;
     map<int, DocumentData> documents_;
     //vector<int> document_ids_;
     std::set<int> document_ids_;
 
-    bool IsStopWord(const string_view& word) const;
-    static bool IsValidWord(const string_view& word);
+    bool IsStopWord(string_view word) const;
+    static bool IsValidWord(string_view word);
 
-    vector<string> SplitIntoWordsNoStop(const string& text) const;
+    vector<string_view> SplitIntoWordsNoStop(string_view text) const;
     static int ComputeAverageRating(const vector<int>& ratings);
 
     struct QueryWord {
-        string data;
+        string_view data;
         bool is_minus;
         bool is_stop;
     };
 
-    QueryWord ParseQueryWord(const string& text) const;
+    QueryWord ParseQueryWord(string_view text) const;
      
     // Sequential version
     struct QuerySeq {
-        set<string> plus_words;
-        set<string> minus_words;
+        set<string_view> plus_words;
+        set<string_view> minus_words;
     };
     
     // Parallel version
     struct Query {
-        vector<string> plus_words;
-        vector<string> minus_words;
+        vector<string_view> plus_words;
+        vector<string_view> minus_words;
     };
     
     // Sequential version
-    QuerySeq ParseQuerySeq(const string& text) const;
+    QuerySeq ParseQuerySeq(string_view text) const;
     // Parallel version
-    Query ParseQuery(const string& text,bool is_uniq=true) const;
+    Query ParseQuery(string_view text, bool is_uniq=true) const;
     Query ParseQuery(
         const std::execution::parallel_policy& policy,
-        const string& text, 
+        string_view text, 
         bool is_uniq=true
     ) const;
     
-    double ComputeWordInverseDocumentFreq(const string& word) const;
+    double ComputeWordInverseDocumentFreq(std::string_view word) const;
     template <typename DocumentPredicate>
     std::vector<Document> FindAllDocuments(
         const Query &query,
@@ -137,17 +141,21 @@ private:
 };
 
 void make_unique(
-    vector<string>& items
+    vector<string_view>& items
 );
 void make_unique(
     const std::execution::parallel_policy& policy,
-    vector<string>& items
+    vector<string_view>& items
 );
 
 template <typename StringContainer>
 SearchServer::SearchServer(const StringContainer &stop_words)
-:stop_words_(MakeUniqueNonEmptyStrings(stop_words))
 {
+    for(string word: MakeUniqueNonEmptyStrings(stop_words)){
+        auto it = words.insert(word);
+	stop_words_.insert(string_view(*(it.first)));
+    } 
+    //stop_words_(MakeUniqueNonEmptyStrings(stop_words))
     if (!all_of(stop_words_.begin(), stop_words_.end(), IsValidWord))
     {
         throw std::invalid_argument("Some of stop words are invalid");
@@ -191,7 +199,7 @@ std::vector<Document> SearchServer::FindAllDocuments(
     DocumentPredicate document_predicate) const
 {
     std::map<int, double> document_to_relevance;
-    for (const std::string &word : query.plus_words)
+    for (std::string_view word: query.plus_words)
     {
         if (word_to_document_freqs_.count(word) == 0)
         {
@@ -208,7 +216,7 @@ std::vector<Document> SearchServer::FindAllDocuments(
         }
     }
 
-    for (const std::string &word : query.minus_words)
+    for (std::string_view word : query.minus_words)
     {
         if (word_to_document_freqs_.count(word) == 0)
         {

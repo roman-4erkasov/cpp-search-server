@@ -5,10 +5,10 @@ void RemoveDuplicates(SearchServer& search_server) {
     for (auto it1=search_server.begin();it1!=search_server.end();++it1) {
         int id1 = *it1;
         if(buff.count(id1)) continue;
-        map<string,double> freqs1=search_server.GetWordFrequencies(id1);
+        map<string_view,double> freqs1=search_server.GetWordFrequencies(id1);
         for(auto it2=next(it1);it2!=search_server.end();++it2){
             int id2 = *it2;
-            map<string,double> freqs2=search_server.GetWordFrequencies(id2);
+            map<string_view, double> freqs2=search_server.GetWordFrequencies(id2);
             if(freqs1.size()!=freqs2.size()) continue;
             bool is_equal = equal(
                 freqs1.begin(),
