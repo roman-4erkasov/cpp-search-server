@@ -39,7 +39,7 @@ int main() {
         const auto [words, status] = search_server.MatchDocument(query, 1);
         cout << words.size() << " words for document 1"s << endl;
         // 1 words for document 1
-        std::cout << "ex1:end"<<std::endl;
+        //std::cout << "ex1:end"<<std::endl;
     }
 
     {

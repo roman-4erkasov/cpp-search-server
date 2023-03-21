@@ -82,7 +82,7 @@ public:
     );
 
 private:
-    std::set<std::string> words;
+    std::set<std::string> words_;
     struct DocumentData {
         int rating;
         DocumentStatus status;
@@ -151,8 +151,8 @@ void make_unique(
 template <typename StringContainer>
 SearchServer::SearchServer(const StringContainer &stop_words)
 {
-    for(string word: MakeUniqueNonEmptyStrings(stop_words)){
-        auto it = words.insert(word);
+    for(std::string word: MakeUniqueNonEmptyStrings(stop_words)){
+        auto it = words_.insert(word);
 	stop_words_.insert(string_view(*(it.first)));
     } 
     //stop_words_(MakeUniqueNonEmptyStrings(stop_words))

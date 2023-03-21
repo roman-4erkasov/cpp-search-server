@@ -20,9 +20,12 @@ SearchServer::SearchServer(
 SearchServer::SearchServer(
     std::string_view stop_words_text
 )
+:SearchServer(SplitIntoWords(stop_words_text))
 {
-    auto it = words.insert(string(stop_words_text));
-    SearchServer(SplitIntoWords(*(it.first)));
+    // auto it = words.insert(string(stop_words_text));
+    // SearchServer(SplitIntoWords(*(it.first)));
+    //string text = string(stop_words_text);
+    //SearchServer(SplitIntoWords(text));
 }
 
 bool SearchServer::IsValidWord(string_view word) {
@@ -214,7 +217,7 @@ void SearchServer::AddDocument(
     if ((document_id < 0) || (documents_.count(document_id) > 0)) {
         throw invalid_argument("Invalid document_id"s);
     }
-    auto it = words.insert(document);
+    auto it = words_.insert(document);
     map<string_view, double> freqs;
     const auto words = SplitIntoWordsNoStop(*(it.first));
     const double inv_word_count = 1.0 / words.size();
