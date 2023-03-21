@@ -223,7 +223,8 @@ void SearchServer::AddDocument(
     const double inv_word_count = 1.0 / words.size();
     for (string_view word : words) {
         word_to_document_freqs_[word][document_id] += inv_word_count;
-        freqs[word] = 1;
+        //freqs[word] = 1;
+        freqs[word]++;
     }
     documents_.emplace(
         document_id, 
