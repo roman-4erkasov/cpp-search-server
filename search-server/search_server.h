@@ -246,25 +246,36 @@ std::vector<Document> SearchServer::FindTopDocuments(
     DocumentPredicate document_predicate
 ) const
 {
-    //LOG_DURATION("FindTopDocuments");
-    const auto query = ParseQuery(string(raw_query));
+    LOG_DURATION("[FindTopDocuments]"s);
+    Query query;
+    {
+        LOG_DURATION("[FindTopDocuments][ParseQuery]"s);
+        query = ParseQuery(string(raw_query));
+    }
     //auto matched_documents = FindAllDocuments(query, document_predicate);
-    auto matched_documents = FindAllDocuments(policy, query, document_predicate);
-
-    sort(
-        matched_documents.begin(),
-        matched_documents.end(),
-        [](const Document &lhs, const Document &rhs)
-        {
-            if (abs(lhs.relevance - rhs.relevance) < EPS)
+    std::vector<Document> matched_documents;
+    {
+        LOG_DURATION("[FindTopDocuments][FindAllDocuments]"s);
+        matched_documents = FindAllDocuments(policy, query, document_predicate);
+    }
+    {
+        LOG_DURATION("[FindTopDocuments][sort matched_documents]"s);
+        sort(
+            matched_documents.begin(),
+            matched_documents.end(),
+            [](const Document &lhs, const Document &rhs)
             {
-                return lhs.rating > rhs.rating;
+                if (abs(lhs.relevance - rhs.relevance) < EPS)
+                {
+                    return lhs.rating > rhs.rating;
+                }
+                else
+                {
+                    return lhs.relevance > rhs.relevance;
+                }
             }
-            else
-            {
-                return lhs.relevance > rhs.relevance;
-            }
-        });
+        );
+    }
     if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT)
     {
         matched_documents.resize(MAX_RESULT_DOCUMENT_COUNT);
@@ -327,35 +338,38 @@ std::vector<Document> SearchServer::FindAllDocuments(
     DocumentPredicate document_predicate
 ) const
 {
-    //std::map<int, double> document_to_relevance;
-    ConcurrentMap<int, double> document_to_relevance;
-    {
-        std::for_each(
-            query.plus_words.begin(),
-            query.plus_words.end(),
-            [&](std::string_view word){
-                if (word_to_document_freqs_.count(word) == 0)
-                {
-                    return;
-                }
-                const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
-                for (const auto& [document_id, term_freq] : word_to_document_freqs_.at(word))
-                {
-                    const auto& document_data = documents_.at(document_id);
-                    if (
-                        document_predicate(
-                            document_id, document_data.status, document_data.rating
-                        )
-                    )
-                    {
-                        document_to_relevance[document_id].ref_to_value += term_freq * inverse_document_freq;
-                    }
-                }
-            }
-        );
-    }
+    //LOG_DURATION("[FindAllDocuments]"s);
+    std::map<int, double> document_to_relevance;
+    //ConcurrentMap<int, double> document_to_relevance;
+    //{
+    //    
+    //    LOG_DURATION("[FindAllDocuments][proc plus_words]"s);
+    //    std::for_each(
+    //        query.plus_words.begin(),
+    //        query.plus_words.end(),
+    //        [&](std::string_view word){
+    //            if (word_to_document_freqs_.count(word) == 0)
+    //            {
+    //                return;
+    //            }
+    //            const double inverse_document_freq = ComputeWordInverseDocumentFreq(word);
+    //            for (const auto& [document_id, term_freq] : word_to_document_freqs_.at(word))
+    //            {
+    //                const auto& document_data = documents_.at(document_id);
+    //                if (
+    //                    document_predicate(
+    //                        document_id, document_data.status, document_data.rating
+    //                    )
+    //                )
+    //                {
+    //                    document_to_relevance[document_id].ref_to_value += term_freq * inverse_document_freq;
+    //                }
+    //            }
+    //        }
+    //    );
+    //}
     
-    /*for (std::string_view word: query.plus_words)
+    for (std::string_view word: query.plus_words)
     {
         if (word_to_document_freqs_.count(word) == 0)
         {
@@ -370,24 +384,30 @@ std::vector<Document> SearchServer::FindAllDocuments(
                 document_to_relevance[document_id] += term_freq * inverse_document_freq;
             }
         }
-    }*/
-
-    for (std::string_view word : query.minus_words)
+    }
     {
-        if (word_to_document_freqs_.count(word) == 0)
+        LOG_DURATION("[FindAllDocuments][proc minus_words]"s);
+        for (std::string_view word : query.minus_words)
         {
-            continue;
-        }
-        for (const auto& [document_id, _] : word_to_document_freqs_.at(word))
-        {
-            document_to_relevance.erase(document_id);
+            if (word_to_document_freqs_.count(word) == 0)
+            {
+                continue;
+            }
+            for (const auto& [document_id, _] : word_to_document_freqs_.at(word))
+            {
+                document_to_relevance.erase(document_id);
+            }
         }
     }
     std::vector<Document> matched_documents;
-    for (const auto& [document_id, relevance] : document_to_relevance.BuildOrdinaryMap())
     {
-        matched_documents.push_back(
-            {document_id, relevance, documents_.at(document_id).rating});
+        LOG_DURATION("[FindAllDocuments][append matched_documents]"s);
+        //for (const auto& [document_id, relevance] : document_to_relevance.BuildOrdinaryMap())
+        for (const auto& [document_id, relevance] : document_to_relevance)
+        {
+            matched_documents.push_back(
+                {document_id, relevance, documents_.at(document_id).rating});
+        }
     }
     return matched_documents;
 }
