@@ -9,7 +9,7 @@
 #include <mutex>
 #include <memory>
 
-const size_t N_BUCKETS_DEFAULT = 10;
+const size_t N_BUCKETS_DEFAULT = 20;
 
 using namespace std::string_literals;
 

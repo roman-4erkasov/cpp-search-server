@@ -1,4 +1,4 @@
-/*
+
 #include "search_server.h"
 #include "log_duration.h"
 #include <execution>
@@ -72,9 +72,9 @@ int main() {
     TEST(seq);
     TEST(par);
 }
-*/
 
 
+/*
 #include <algorithm>
 #include <cstdlib>
 #include <future>
@@ -104,11 +104,11 @@ int main() {
             "white cat and yellow hat"s,
             "curly cat curly tail"s,
             "nasty dog with big eyes"s,
-            "nasty pigeon john"s,
+            //"nasty pigeon john"s,
             
-	    "white cat and yellow hat"s,
-            "curly cat curly tail"s,
-            "nasty dog with big eyes"s,
+	    //"white cat and yellow hat"s,
+            //"curly cat curly tail"s,
+            //"nasty dog with big eyes"s,
             "nasty pigeon john"s
         }
     ) {
@@ -139,7 +139,7 @@ int main() {
     //}
     return 0;
 }
-
+*/
 
 /*
 #include <random>
