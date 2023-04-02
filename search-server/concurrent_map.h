@@ -9,6 +9,8 @@
 #include <mutex>
 #include <memory>
 
+const size_t N_BUCKETS_DEFAULT = 10;
+
 using namespace std::string_literals;
 
 template <typename Key, typename Value>
@@ -26,7 +28,7 @@ public:
         Value& ref_to_value;
     };
 
-    explicit ConcurrentMap(size_t bucket_count);
+    explicit ConcurrentMap(size_t bucket_count=N_BUCKETS_DEFAULT);
     Access operator[](const Key& key);
     std::map<Key, Value> BuildOrdinaryMap();
     void erase(const Key& key);

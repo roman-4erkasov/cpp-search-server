@@ -40,3 +40,6 @@
 # just my notes, not for git 
 notes.txt
 
+
+# vim swap files
+*.swp

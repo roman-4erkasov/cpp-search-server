@@ -53,7 +53,7 @@ vector<string_view> SearchServer::SplitIntoWordsNoStop(string_view text) const
 
 
 std::vector<Document> SearchServer::FindTopDocuments(
-    const std::string &raw_query,
+    std::string_view raw_query,
     DocumentStatus status
 ) const
 {
@@ -66,35 +66,60 @@ std::vector<Document> SearchServer::FindTopDocuments(
         { return document_status == status; }
     );
 }
+
 std::vector<Document> SearchServer::FindTopDocuments(
     const std::execution::sequenced_policy& policy,
-    const std::string &raw_query,
+    std::string_view raw_query,
     DocumentStatus status
 ) const
 {
     return FindTopDocuments(raw_query, status);
 }
 
-std::vector<Document> SearchServer::FindTopDocuments(const string &raw_query) const
+std::vector<Document> SearchServer::FindTopDocuments(string_view raw_query) const
 {
     return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 }
 std::vector<Document> SearchServer::FindTopDocuments(
     const std::execution::sequenced_policy& policy,
-    const string &raw_query
+    string_view raw_query
 ) const
 {
     return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 }
 
 
-//tuple<vector<string>, DocumentStatus> SearchServer::MatchDocument(
+std::vector<Document> SearchServer::FindTopDocuments(
+    const std::execution::parallel_policy& policy,
+    std::string_view raw_query,
+    DocumentStatus status
+) const
+{
+    return FindTopDocuments(
+        policy,
+        raw_query, 
+	[status](
+            int document_id, 
+            DocumentStatus document_status, 
+            int rating
+        )
+        { return document_status == status; }
+    );
+}
+
+std::vector<Document> SearchServer::FindTopDocuments(
+    const std::execution::parallel_policy& policy,
+    string_view raw_query
+) const
+{
+    return FindTopDocuments(policy, raw_query, DocumentStatus::ACTUAL);
+}
+
 tuple<vector<string_view>, DocumentStatus> SearchServer::MatchDocument(
     string_view raw_query,
     int document_id
 ) const
 {
-    
     const auto query = ParseQuery(raw_query);
     for (const string_view &word : query.minus_words)
     {

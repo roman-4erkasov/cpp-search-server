@@ -20,6 +20,9 @@ public:
     LogDuration(const std::string &id, std::ostream &os = std::cerr)
         : id_(id), os_(os) {}
 
+    LogDuration(std::string_view id, std::ostream &os = std::cerr)
+        : id_(std::string(id)), os_(os) {}
+
     ~LogDuration()
     {
         using namespace std::chrono;
