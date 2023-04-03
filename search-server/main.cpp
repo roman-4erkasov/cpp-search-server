@@ -1,6 +1,7 @@
-/*
+
 #include "search_server.h"
 #include "log_duration.h"
+#include "test_example_functions.h"
 #include <execution>
 #include <iostream>
 #include <random>
@@ -61,20 +62,21 @@ void Test(string_view mark, const SearchServer& search_server, const vector<stri
 }
 #define TEST(policy) Test(#policy, search_server, queries, execution::policy)
 int main() {
-    mt19937 generator;
-    const auto dictionary = GenerateDictionary(generator, 1000, 10);
-    const auto documents = GenerateQueries(generator, dictionary, 10'000, 70);
-    SearchServer search_server(dictionary[0]);
-    for (size_t i = 0; i < documents.size(); ++i) {
-        search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, {1, 2, 3});
-    }
-    const auto queries = GenerateQueries(generator, dictionary, 100, 70);
-    TEST(seq);
-    TEST(par);
+    TestAll();
+    //mt19937 generator;
+    //const auto dictionary = GenerateDictionary(generator, 1000, 10);
+    //const auto documents = GenerateQueries(generator, dictionary, 10'000, 70);
+    //SearchServer search_server(dictionary[0]);
+    //for (size_t i = 0; i < documents.size(); ++i) {
+    //    search_server.AddDocument(i, documents[i], DocumentStatus::ACTUAL, {1, 2, 3});
+    //}
+    //const auto queries = GenerateQueries(generator, dictionary, 100, 70);
+    //TEST(seq);
+    //TEST(par);
 }
-*/
 
 
+/*
 #include <algorithm>
 #include <cstdlib>
 #include <future>
@@ -139,7 +141,7 @@ int main() {
     //}
     return 0;
 }
-
+*/
 
 /*
 #include <random>

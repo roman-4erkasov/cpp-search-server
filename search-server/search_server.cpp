@@ -9,7 +9,7 @@ using namespace std;
 using namespace std::literals;
 
 bool SearchServer::duration_logging = false;
-
+bool SearchServer::verbose = true;
 SearchServer::SearchServer(
     std::string const& stop_words_text
 )
@@ -52,7 +52,7 @@ vector<string_view> SearchServer::SplitIntoWordsNoStop(string_view text) const
 
 
 std::vector<Document> SearchServer::FindTopDocuments(
-    std::string_view raw_query,
+    const std::string& raw_query,
     DocumentStatus status
 ) const
 {
@@ -68,20 +68,20 @@ std::vector<Document> SearchServer::FindTopDocuments(
 
 std::vector<Document> SearchServer::FindTopDocuments(
     const std::execution::sequenced_policy& policy,
-    std::string_view raw_query,
+    const std::string& raw_query,
     DocumentStatus status
 ) const
 {
     return FindTopDocuments(raw_query, status);
 }
 
-std::vector<Document> SearchServer::FindTopDocuments(string_view raw_query) const
+std::vector<Document> SearchServer::FindTopDocuments(const string& raw_query) const
 {
     return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 }
 std::vector<Document> SearchServer::FindTopDocuments(
     const std::execution::sequenced_policy& policy,
-    string_view raw_query
+    const string& raw_query
 ) const
 {
     return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
@@ -90,7 +90,7 @@ std::vector<Document> SearchServer::FindTopDocuments(
 
 std::vector<Document> SearchServer::FindTopDocuments(
     const std::execution::parallel_policy& policy,
-    std::string_view raw_query,
+    const std::string& raw_query,
     DocumentStatus status
 ) const
 {
@@ -108,7 +108,7 @@ std::vector<Document> SearchServer::FindTopDocuments(
 
 std::vector<Document> SearchServer::FindTopDocuments(
     const std::execution::parallel_policy& policy,
-    string_view raw_query
+    const string& raw_query
 ) const
 {
     return FindTopDocuments(policy, raw_query, DocumentStatus::ACTUAL);
@@ -225,9 +225,9 @@ void SearchServer::AddDocument(
     DocumentStatus status,
     const std::vector<int>& ratings
 ) {
-    //stringstream ss;
-    //ss << "[AddDocument] start\n";
-    //ss << "[AddDocument] doc=\""<<document<<"\"\n";
+    stringstream ss;
+    if(verbose) ss << "[AddDocument] start\n";
+    if(verbose) ss << "[AddDocument] doc=\""<<document<<"\"\n";
     if ((document_id < 0) || (documents_.count(document_id) > 0)) {
         throw invalid_argument("Invalid document_id"s);
     }
@@ -235,14 +235,14 @@ void SearchServer::AddDocument(
     map<string_view, double> freqs;
     const auto words = SplitIntoWordsNoStop(*(it.first));
     const double inv_word_count = 1.0 / words.size();
-    //ss << "[AddDocument] inv_dc=\""<<inv_word_count<<"\"\n";
+    if(verbose) ss << "[AddDocument] inv_dc=\""<<inv_word_count<<"\"\n";
     for (string_view word : words) {
         word_to_document_freqs_[word][document_id] += inv_word_count;
-        //ss << "[AddDocument] w2df["
-        //   <<word<<"][doc_id"<<document_id
-        //   <<"]=\""
-        //   <<word_to_document_freqs_[word][document_id]
-        //   <<"\"\n";
+        if(verbose) ss << "[AddDocument] w2df["
+           <<word<<"][doc_id"<<document_id
+           <<"]=\""
+           <<word_to_document_freqs_[word][document_id]
+           <<"\"\n";
         freqs[word] += 1;
     }
     documents_.emplace(
@@ -250,8 +250,9 @@ void SearchServer::AddDocument(
         DocumentData{ComputeAverageRating(ratings), status, freqs}
     );
     document_ids_.insert(document_id);
-    //ss << "[AddDocument] end\n";
-    //std::cout << ss.str();
+    if(verbose) ss << "[AddDocument] end "
+        << "doc_sz="<< documents_.size() <<"\n";
+    if(verbose) std::cout << ss.str() << std::endl;
 }
 
 
