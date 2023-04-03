@@ -1,4 +1,4 @@
-
+/*
 #include "search_server.h"
 #include "log_duration.h"
 #include <execution>
@@ -72,9 +72,9 @@ int main() {
     TEST(seq);
     TEST(par);
 }
+*/
 
 
-/*
 #include <algorithm>
 #include <cstdlib>
 #include <future>
@@ -139,7 +139,7 @@ int main() {
     //}
     return 0;
 }
-*/
+
 
 /*
 #include <random>

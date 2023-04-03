@@ -3,19 +3,18 @@
 #include <numeric>
 #include <deque>
 #include <stdexcept>
-
+#include <sstream>
 
 using namespace std;
 using namespace std::literals;
 
+bool SearchServer::duration_logging = false;
 
 SearchServer::SearchServer(
     std::string const& stop_words_text
 )
 :SearchServer(std::string_view(stop_words_text))
 {}
-
-
 
 SearchServer::SearchServer(
     std::string_view stop_words_text
@@ -226,6 +225,9 @@ void SearchServer::AddDocument(
     DocumentStatus status,
     const std::vector<int>& ratings
 ) {
+    //stringstream ss;
+    //ss << "[AddDocument] start\n";
+    //ss << "[AddDocument] doc=\""<<document<<"\"\n";
     if ((document_id < 0) || (documents_.count(document_id) > 0)) {
         throw invalid_argument("Invalid document_id"s);
     }
@@ -233,15 +235,23 @@ void SearchServer::AddDocument(
     map<string_view, double> freqs;
     const auto words = SplitIntoWordsNoStop(*(it.first));
     const double inv_word_count = 1.0 / words.size();
+    //ss << "[AddDocument] inv_dc=\""<<inv_word_count<<"\"\n";
     for (string_view word : words) {
         word_to_document_freqs_[word][document_id] += inv_word_count;
-        freqs[word] = 1;
+        //ss << "[AddDocument] w2df["
+        //   <<word<<"][doc_id"<<document_id
+        //   <<"]=\""
+        //   <<word_to_document_freqs_[word][document_id]
+        //   <<"\"\n";
+        freqs[word] += 1;
     }
     documents_.emplace(
         document_id, 
         DocumentData{ComputeAverageRating(ratings), status, freqs}
     );
     document_ids_.insert(document_id);
+    //ss << "[AddDocument] end\n";
+    //std::cout << ss.str();
 }
 
 
