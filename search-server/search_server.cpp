@@ -9,7 +9,7 @@ using namespace std;
 using namespace std::literals;
 
 bool SearchServer::duration_logging = false;
-bool SearchServer::verbose = true;
+bool SearchServer::verbose = false;
 SearchServer::SearchServer(
     std::string const& stop_words_text
 )
@@ -346,6 +346,7 @@ void make_unique(
     const std::execution::parallel_policy& policy,
     vector<string_view>& items
 ) {
+    sort(items.begin(),items.end());
     auto it_end = unique(policy, items.begin(),items.end());
     items.erase(it_end, items.end());
 }
