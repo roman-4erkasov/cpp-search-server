@@ -52,7 +52,8 @@ vector<string_view> SearchServer::SplitIntoWordsNoStop(string_view text) const
 
 
 std::vector<Document> SearchServer::FindTopDocuments(
-    const std::string& raw_query,
+    //const std::string& raw_query,
+    std::string_view raw_query,
     DocumentStatus status
 ) const
 {
@@ -68,20 +69,25 @@ std::vector<Document> SearchServer::FindTopDocuments(
 
 std::vector<Document> SearchServer::FindTopDocuments(
     const std::execution::sequenced_policy& policy,
-    const std::string& raw_query,
+    //const std::string& raw_query,
+    std::string_view raw_query,
     DocumentStatus status
 ) const
 {
     return FindTopDocuments(raw_query, status);
 }
 
-std::vector<Document> SearchServer::FindTopDocuments(const string& raw_query) const
+std::vector<Document> SearchServer::FindTopDocuments(
+    //const string& raw_query
+    std::string_view raw_query
+) const
 {
     return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
 }
 std::vector<Document> SearchServer::FindTopDocuments(
     const std::execution::sequenced_policy& policy,
-    const string& raw_query
+    //const string& raw_query
+    std::string_view raw_query
 ) const
 {
     return FindTopDocuments(raw_query, DocumentStatus::ACTUAL);
@@ -90,7 +96,8 @@ std::vector<Document> SearchServer::FindTopDocuments(
 
 std::vector<Document> SearchServer::FindTopDocuments(
     const std::execution::parallel_policy& policy,
-    const std::string& raw_query,
+    //const std::string& raw_query,
+    std::string_view raw_query,
     DocumentStatus status
 ) const
 {
@@ -108,7 +115,8 @@ std::vector<Document> SearchServer::FindTopDocuments(
 
 std::vector<Document> SearchServer::FindTopDocuments(
     const std::execution::parallel_policy& policy,
-    const string& raw_query
+    //const string& raw_query
+    std::string_view raw_query
 ) const
 {
     return FindTopDocuments(policy, raw_query, DocumentStatus::ACTUAL);
