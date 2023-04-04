@@ -444,7 +444,7 @@ std::vector<Document> SearchServer::FindAllDocuments(
         //    );
         //}
         std::for_each(
-            policy,
+            //policy,
             query.plus_words.begin(),
             query.plus_words.end(),
             [&](const std::string_view& word){
@@ -491,7 +491,7 @@ std::vector<Document> SearchServer::FindAllDocuments(
     {
         if(duration_logging) LOG_DURATION("[FindAllDocuments][proc minus_words]"s);
         std::for_each(
-            policy,
+            //policy,
             query.minus_words.begin(),
             query.minus_words.end(),
             [&](const std::string_view& word){
