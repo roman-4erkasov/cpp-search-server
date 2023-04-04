@@ -130,7 +130,7 @@ private:
     static bool IsValidWord(std::string_view word);
 
     std::vector<std::string_view> SplitIntoWordsNoStop(std::string_view text) const;
-    static int ComputeAverageRating(const vector<int>& ratings);
+    static int ComputeAverageRating(const std::vector<int>& ratings);
 
     struct QueryWord {
         std::string_view data;
@@ -217,13 +217,15 @@ std::vector<Document> SearchServer::FindTopDocuments(
 ) const
 {
     const Query query = ParseQuery(raw_query);
-    auto matched_documents = FindAllDocuments(query, document_predicate);
+    std::vector<Document> matched_documents = FindAllDocuments(
+        query, document_predicate
+    );
     std::sort(
         matched_documents.begin(),
         matched_documents.end(),
         [](const Document &lhs, const Document &rhs)
         {
-            if (abs(lhs.relevance - rhs.relevance) < EPS)
+            if (std::abs(lhs.relevance - rhs.relevance) < EPS)
             {
                 return lhs.rating > rhs.rating;
             }
@@ -231,7 +233,8 @@ std::vector<Document> SearchServer::FindTopDocuments(
             {
                 return lhs.relevance > rhs.relevance;
             }
-        });
+        }
+    );
     if (matched_documents.size() > MAX_RESULT_DOCUMENT_COUNT)
     {
         matched_documents.resize(MAX_RESULT_DOCUMENT_COUNT);
@@ -256,7 +259,7 @@ std::vector<Document> SearchServer::FindTopDocuments(
         matched_documents.end(),
         [](const Document &lhs, const Document &rhs)
         {
-            if (abs(lhs.relevance - rhs.relevance) < EPS)
+            if (std::abs(lhs.relevance - rhs.relevance) < EPS)
             {
                 return lhs.rating > rhs.rating;
             }
