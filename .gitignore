@@ -30,3 +30,16 @@
 *.exe
 *.out
 *.app
+
+# Mac OS
+.DS_Store
+
+# vscode metadata
+.vscode
+
+# just my notes, not for git 
+notes.txt
+
+
+# vim swap files
+*.swp

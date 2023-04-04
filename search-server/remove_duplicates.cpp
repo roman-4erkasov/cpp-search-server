@@ -12,7 +12,7 @@ void RemoveDuplicates(SearchServer &search_server)
         set<string> bag_of_words;
         for (const auto &[word, _] : search_server.GetWordFrequencies(doc_id))
         {
-            bag_of_words.insert(word);
+            bag_of_words.insert(string(word));
         }
         if (passed.find(bag_of_words) == passed.end())
         {
