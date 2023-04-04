@@ -19,3 +19,4 @@ std::set<std::string, std::less<> > MakeUniqueNonEmptyStrings(const StringContai
     }
     return non_empty_strings;
 }
+
