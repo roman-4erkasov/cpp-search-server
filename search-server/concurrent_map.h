@@ -35,13 +35,12 @@ public:
     void erase(const Key& key);
 
 private:
-    size_t bucket_count_;
     std::vector<Bucket> buckets_;
 };
 
 template <typename Key, typename Value>
 ConcurrentMap<Key, Value>::ConcurrentMap(size_t bucket_count)
-:bucket_count_(bucket_count), buckets_(bucket_count)
+:buckets_(bucket_count)
 { }
 
 template <typename Key, typename Value>
